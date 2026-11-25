@@ -17,6 +17,7 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+      - otel-collector
 
   jaeger:
     image: jaegertracing/all-in-one:1.76.0
@@ -29,7 +30,8 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: otel-collector
     restart: unless-stopped
-    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    command:
+      - "--config=/etc/otelcol-contrib/config.yaml"
     volumes:
       - ./otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
     depends_on:
@@ -45,3 +47,19 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - otel-collector
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: otel-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - jaeger
+
+volumes:
+  grafana-data:
