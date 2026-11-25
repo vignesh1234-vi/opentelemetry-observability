@@ -1,1 +1,27 @@
 
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: otel-backend
+    restart: unless-stopped
+    expose:
+      - "4000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: otel-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: otel-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+
